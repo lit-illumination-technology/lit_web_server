@@ -42,36 +42,27 @@
                 </div>
                 <div class="col-sm-4"></div>
             </div>
+            <div id="controls"></div>
             <div class="row">
                 <div class="col-sm-4"></div>
                 <div class="col-sm-4 centered_hor start_hidden">
                     <div class="panel panel-default">
                         <div class="panel-heading">Color</div>
                         <div class="panel-body">
-                            <input type="text" class="form-control colorpicker-element" id="color_input" data-format="hex" value="white"/>
                         </div>
                     </div>
                 </div>
                 <div class="col-sm-4"></div>
             </div>
             <div class="row">
-                <div class="col-sm-4"></div>
-                <div class="col-sm-4 centered_hor start_hidden">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Speed</div>
-                        <div class="panel-body">
-                            <input id="speed_input" type="text" data-slider-value=50 date-slider-min=0 data-slider-max=100></input>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-4"></div>
-            </div>
-            <div class="row">
-                <div class="col-sm-4"></div>
-                <div class="col-sm-4 centered_hor">
+                <div class="col-sm-5"></div>
+                <div class="col-sm-1 centered_hor">
                     <button type="button" class="btn btn-success start_hidden" id="send">go</button>
                 </div>
-                <div class="col-sm-4"></div>
+                <div class="col-sm-1 centered_hor">
+                    <button type="button" class="btn btn-danger start_hidden" id="off">off</button>
+                </div>
+                <div class="col-sm-5"></div>
             </div>
             <h4 class="row centered_hor" id="result"></h4>
         </div>
@@ -83,16 +74,13 @@
         <script src="{{ url_for('static', filename='js/bootstrap2-toggle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap-notify.min.js') }}"></script>
         <script>
-            COLOR = 1;
-            SPEED = 2;
             $(document).ready(function(){
                 effectSelector = $("#effect_selector");
-                speedInput = $("#speed_input");
-                speedInput.slider();
-                //colorSelector = $("#color_selector");
-                colorInput = $("#color_input");
                 sendButton = $("#send");
+                offButton = $("#off");
                 ranges = [];
+                colors = {};
+                argControls = {};
 
                 $.get("/get_ranges.json", function(result) {
                     $.each(result.sections, function() {
@@ -146,10 +134,11 @@
                 //Populate the effect dropdown
                 $.getJSON("/get_effects.json", function(result) {
                     $.each(result.effects, function() {
-                        effectSelector.append($("<option />").val(this.modifiers).text(this.name));
+                        effectSelector.append($("<option />").val(JSON.stringify(this.schema)).text(this.name));
                     });
                     effectSelector.closest(".col-sm-4").fadeIn();
                     sendButton.fadeIn();
+                    offButton.fadeIn();
                     //Update options for initially selected effect
                     effectSelector.trigger("change");
                 });
@@ -165,58 +154,67 @@
 
                 //Populate the color selector
                 $.getJSON("/get_colors.json", function(result) {
-                    var colors = {};
                     $.each(result.colors, function() {
                         colors[this.name] = rgbToHex(this.color);
                     });
-                    colorInput.colorpicker({colorSelectors : colors,
+                });
+
+                //When a different effect is chosen, hide/show appropriate options
+                effectSelector.change(function() {
+                    $('#controls').empty();
+                    argControls = {};
+                    var controls = effectSelector.val();
+                    controls = $.parseJSON(controls);
+                    for (i in controls) {
+                        type = controls[i].value.type;
+                        name = i;
+                        mainDiv = $('<div/>', { 'class': 'row' });
+                        mainDiv.append($('<div/>', {'class': 'col-sm-4'}));
+                        controlDiv = $('<div/>', {'class': 'panel panel-default'});
+                        controlDiv.append($('<div/>', {'class': 'panel-heading', text: name}));
+                        mainDiv.append($('<div/>', {'class': 'col-sm-4 centered_hor'}).append(controlDiv));
+                        mainDiv.append($('<div/>', {'class': 'col-sm-4'}));
+                        if (type == 'int') {
+                            slider = $('<input/>', {id: 'input_'+i, type: 'text', 'data-slider-value': controls[i].value.default, 'data-slider-min': controls[i].value.min, 'data-slider-max': controls[i].value.max});
+                            controlDiv.append($('<div/>', {'class': 'panel-body'}).append(slider));
+                            $('#controls').append(mainDiv);
+                            slider.slider();
+                            argControls[name] = function() {return parseInt(slider.slider("getValue"));};
+                        }
+                        else if (type == 'color') {
+                            colorSelector = $('<input/>', {id: 'input_'+i, 'class': 'form-control colorpicker-element', type: 'text', 'data-format': 'hex', 'value': controls[i].value.default});
+                            controlDiv.append($('<div/>', {'class': 'panel-body'}).append(colorSelector));
+                            $('#controls').append(mainDiv);
+                            argControls[name] = function (){
+                                var rgba = colorSelector.data('colorpicker').color.toRGB();
+                                return [rgba['r'], rgba['g'], rgba['b']];
+                            }
+                            colorSelector.colorpicker({colorSelectors : colors,
                                             template: '<div class="colorpicker dropdown-menu">' +
                                               '<div class="colorpicker-saturation"><i><b></b></i></div>' +
                                               '<div class="colorpicker-hue"><i></i></div>' +
                                               '<div class="colorpicker-alpha"><i></i></div>' +
                                               '<div class="colorpicker-color"><div /></div>' +
-                                              //'<div class="colorpicker-selectors"></div>' +
                                               '</div>',});
-                });
-
-                //When a different effect is chosen, hide/show appropriate options
-                effectSelector.change(function() {
-                    if(effectSelector.val() & COLOR){
-                        colorInput.closest(".col-sm-4").fadeIn();
-                    } else {
-                        colorInput.closest(".col-sm-4").fadeOut();
-                    }
-
-                    if(effectSelector.val() & SPEED) {
-                        speedInput.closest(".col-sm-4").fadeIn();
-                        speedInput.slider('relayout');
-                    } else {
-                        speedInput.closest(".col-sm-4").fadeOut();
+                        }
                     }
                 });
                 
-                function getSelectedColor(){
-                    var rgba = colorInput.data('colorpicker').color.toRGB();
-                    return [rgba['r'], rgba['g'], rgba['b']];
-                }
 
                 //Send the command
                 sendButton.click(function(){
                     if(ranges.length == 0){
                         var command = {
                             effect: "off",
-                            args: {}
+                            args: {"ranges": "all"}
                         }
                     }
                     else {
-                        rgb = getSelectedColor();
                         var args = {};
                         args["ranges"] = ranges;
-                        if(effectSelector.val() & COLOR)
-                            args["color"] = rgb;
-                        if(effectSelector.val() & SPEED)
-                            args["speed"] = parseInt(speedInput.slider("getValue"));
-
+                        for (control in argControls) {
+                            args[control] = argControls[control]();
+                        }
                         var command = {
                             effect : effectSelector.children("option").filter(":selected").text(),
                             args : args
@@ -243,6 +241,35 @@
                         }
                     });
                 });
+
+                offButton.click(function(){
+                    var command = {
+                            effect: "off",
+                            args: {"ranges": "all"}
+                    }
+
+                    $.post({
+                        url: '/command',
+                        data: JSON.stringify(),
+                        contentType: "application/json",
+                        dataType: 'json'
+                    }).done(function(data) {
+                        if ( $(window).width() > 768) {
+                            $("#result").html("")
+                            $.notify({
+                                // options
+                                message: data.result
+                            },{
+                                // settings
+                                type: 'success'
+                            });
+                        } 
+                        else {
+                            $("#result").html(data.result)
+                        }
+                    });
+                });
+
 
             });
         </script>
