@@ -174,21 +174,21 @@
                         controlDiv.append($('<div/>', {'class': 'panel-heading', text: name}));
                         mainDiv.append($('<div/>', {'class': 'col-sm-4 centered_hor'}).append(controlDiv));
                         mainDiv.append($('<div/>', {'class': 'col-sm-4'}));
-                        if (type == 'int') {
-                            slider = $('<input/>', {id: 'input_'+i, type: 'text', 'data-slider-value': controls[i].value.default, 'data-slider-min': controls[i].value.min, 'data-slider-max': controls[i].value.max});
+                        if (type == 'number') {
+                            slider = $('<input/>', {id: 'input_'+i, type: 'text', 'data-slider-value': controls[i].value.default, 'data-slider-min': controls[i].value.min, 'data-slider-max': controls[i].value.max, 'data-slider-step': 0.1});
                             controlDiv.append($('<div/>', {'class': 'panel-body'}).append(slider));
                             $('#controls').append(mainDiv);
                             slider.slider();
-                            argControls[name] = function() {return parseInt(slider.slider("getValue"));};
+                            argControls[name] = function(s) {
+                                return function() {
+                                    return parseInt(s.slider("getValue"))
+                                }
+                            }(slider);
                         }
                         else if (type == 'color') {
-                            colorSelector = $('<input/>', {id: 'input_'+i, 'class': 'form-control colorpicker-element', type: 'text', 'data-format': 'hex', 'value': controls[i].value.default});
+                            colorSelector = $('<input/>', {id: 'input_'+i, 'class': 'form-control colorpicker-element', type: 'text', 'data-format': 'hex', 'value': rgbToHex(controls[i].value.default)});
                             controlDiv.append($('<div/>', {'class': 'panel-body'}).append(colorSelector));
                             $('#controls').append(mainDiv);
-                            argControls[name] = function (){
-                                var rgba = colorSelector.data('colorpicker').color.toRGB();
-                                return [rgba['r'], rgba['g'], rgba['b']];
-                            }
                             colorSelector.colorpicker({colorSelectors : colors,
                                             template: '<div class="colorpicker dropdown-menu">' +
                                               '<div class="colorpicker-saturation"><i><b></b></i></div>' +
@@ -196,6 +196,12 @@
                                               '<div class="colorpicker-alpha"><i></i></div>' +
                                               '<div class="colorpicker-color"><div /></div>' +
                                               '</div>',});
+                            argControls[name] = function (selector){
+                                return function() {
+                                    var rgba = selector.data('colorpicker').color.toRGB();
+                                    return [rgba['r'], rgba['g'], rgba['b']];
+                                }
+                            }(colorSelector);
                         }
                     }
                 });
@@ -250,7 +256,7 @@
 
                     $.post({
                         url: '/command',
-                        data: JSON.stringify(),
+                        data: JSON.stringify(command),
                         contentType: "application/json",
                         dataType: 'json'
                     }).done(function(data) {
