@@ -20,6 +20,15 @@
         </div>
         <div class="container">
             <div class="row">
+                <div class="col-sm-5"></div>
+                    <div class="col-sm-2 centered_hor">
+                        <button type="button" class="btn btn-success start_hidden" id="on">on</button>
+                        <button type="button" class="btn btn-danger start_hidden" id="off">off</button>
+                    </div>
+                </div>
+                <div class="col-sm-5"></div>
+            </div>
+            <div class="row">
                 <div class="col-sm-4"></div>
                 <div class="col-sm-4 centered_hor start_hidden">
                     <div class="panel panel-default">
@@ -56,11 +65,8 @@
             </div>
             <div class="row">
                 <div class="col-sm-5"></div>
-                <div class="col-sm-1 centered_hor">
+                <div class="col-sm-2 centered_hor">
                     <button type="button" class="btn btn-success start_hidden" id="send">go</button>
-                </div>
-                <div class="col-sm-1 centered_hor">
-                    <button type="button" class="btn btn-danger start_hidden" id="off">off</button>
                 </div>
                 <div class="col-sm-5"></div>
             </div>
@@ -78,6 +84,7 @@
                 effectSelector = $("#effect_selector");
                 sendButton = $("#send");
                 offButton = $("#off");
+                onButton = $("#on");
                 ranges = [];
                 colors = {};
                 argControls = {};
@@ -139,6 +146,7 @@
                     effectSelector.closest(".col-sm-4").fadeIn();
                     sendButton.fadeIn();
                     offButton.fadeIn();
+                    onButton.fadeIn();
                     //Update options for initially selected effect
                     effectSelector.trigger("change");
                 });
@@ -276,6 +284,33 @@
                     });
                 });
 
+                onButton.click(function(){
+                    var command = {
+                            effect: "on",
+                            args: {"ranges": "all"}
+                    }
+
+                    $.post({
+                        url: '/command',
+                        data: JSON.stringify(command),
+                        contentType: "application/json",
+                        dataType: 'json'
+                    }).done(function(data) {
+                        if ( $(window).width() > 768) {
+                            $("#result").html("")
+                            $.notify({
+                                // options
+                                message: data.result
+                            },{
+                                // settings
+                                type: 'success'
+                            });
+                        } 
+                        else {
+                            $("#result").html(data.result)
+                        }
+                    });
+                });
 
             });
         </script>
