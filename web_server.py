@@ -1,15 +1,25 @@
+import argparse
+import configparser
 from flask import Flask, render_template, request, abort, Response, json, jsonify
 from functools import wraps
-import threading, os.path
-import configparser
 import operator
+import os.path
+import threading
+
 import lit
 
 app = Flask(__name__)
 app.config['DEBUG'] = False
 
+parser = argparse.ArgumentParser(description='Start the L.I.T. daemon')
+parser.add_argument('--config', '-c', dest='base_path', type=str, 
+help='specify the configuration directory')
+args = parser.parse_args()
+config_dir = args.base_path if args.base_path and os.path.isdir(args.base_path) else "/home/pi/.lit/webserver"
+print("Using config directory {}".format(config_dir))
+
 config = configparser.ConfigParser()
-config.read('/home/pi/.lit/webserver/config.ini')
+config.read(os.path.join(config_dir, 'config.ini'))
 password = config.get("General", "password")
 username = config.get("General", "username")
 port = config.getint("General", "port")
