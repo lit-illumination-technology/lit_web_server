@@ -54,10 +54,10 @@ def hello():
 @requires_auth
 def command():
     json = request.get_json();
-    if "args" in json:
-        res = lit.start_effect(effect=json["effect"], args=json["args"])
+    if "effect" in json:
+        res = lit.start_effect(effect=json["effect"], args=json.get("args", {}))
     else:
-        res = lit.start_effect(effect=json["effect"])
+        res = lit.start_preset(json["preset"])
     return jsonify(res)
 
 @app.route("/has_ai", methods = ['GET'])
@@ -67,6 +67,10 @@ def has_ai():
 @app.route("/get_effects.json", methods = ['GET'])
 def effects():
     return jsonify(effects=sorted(lit.get_effects(), key=operator.itemgetter('name')))
+
+@app.route("/get_presets.json", methods = ['GET'])
+def presets():
+    return jsonify(presets=sorted(lit.get_presets()))
 
 @app.route("/get_colors.json", methods = ['GET'])
 def colors():
