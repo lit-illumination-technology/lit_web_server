@@ -3,7 +3,7 @@ Description=lit web server
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 web_server.py
+ExecStart=/usr/bin/python3 web_server.py -c /home/pi/.lit/webserver
 WorkingDirectory=/home/pi/lit_web_server
 StandardOutput=inherit
 StandardError=inherit

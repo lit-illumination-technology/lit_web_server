@@ -55,9 +55,9 @@ def hello():
 def command():
     json = request.get_json();
     if "args" in json:
-        res = lit.start(effect=json["effect"], args=json["args"])
+        res = lit.start_effect(effect=json["effect"], args=json["args"])
     else:
-        res = lit.start(effect=json["effect"])
+        res = lit.start_effect(effect=json["effect"])
     return jsonify(res)
 
 @app.route("/has_ai", methods = ['GET'])
