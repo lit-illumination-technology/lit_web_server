@@ -63,3 +63,14 @@ To control your lights from anywhere, you will need to setup port forwarding on 
 Authentication is done with http basic authentication. In the request header, set the `Authorization` cookie to `Basic XXX` where `XXX` is username:password in base 64.
 ### Is this secure?
 No. Not at all. If you don't want random internet people intercepting your password and turning on your lights in the middle of the night, you will need to setup https.
+
+## Suggested Integrations
+- [Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm&hl=en_US) is an android app that allows you to automate tasks. Events can trigger a POST request that turn on/off the lights. Leaving your home wifi can turn the lights off. Your phone's morning alarm can turn the lights on. To set this up the Tasker action is __Net -> Http POST__ and the settings are:
+    - __Server:Port__: *username*:*password*@*url*
+        - *ex*: nick:hunter2@12.345.6.789
+    - __Path__: command
+    - __Data/File__: {"effect": "*effect*", "args": {...}}
+        - *ex*: {"effect": "on". "args": {"color": [255, 0, ,255]}}
+    - __Content Type__: application/json
+    - __Trust Any Certificate__: ✓
+- Turn off the lights when you turn off or put your computer to sleep. This one is more operating system dependent, but for many linux systems this would involve a systemd service with `WantedBy=sleep.target` and a `curl` request.
