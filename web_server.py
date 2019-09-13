@@ -84,5 +84,9 @@ def ranges():
 def speeds():
     return jsonify(speeds=lit.get_speeds())
 
+@app.route("/get_pixels.json", methods = ['GET'])
+def pixels():
+    return jsonify(pixels=lit.get_pixels())
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=port, threaded=True)
