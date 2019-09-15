@@ -88,5 +88,9 @@ def speeds():
 def pixels():
     return jsonify(pixels=lit.get_pixels())
 
+@app.route("/get_state.json", methods = ['GET'])
+def state():
+    return jsonify(state=lit.get_state())
+
 if __name__ == "__main__":
     app.run(host='0.0.0.0', port=port, threaded=True)
