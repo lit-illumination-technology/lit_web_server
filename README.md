@@ -19,7 +19,7 @@ port: 80
 ### Installation
 1. Go to your home directory
 `$ cd`
-2.Clone this repository
+2. Clone this repository
 `$ git clone https://github.com/nickpesce/lit_web_server.git`
 3. Install the start script
 `sudo cp lit_web_server/litwebserver.service /etc/systemd/system`
