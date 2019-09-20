@@ -22,10 +22,10 @@ port: 80
 2. Clone this repository
 `$ git clone https://github.com/nickpesce/lit_web_server.git`
 3. Install the start script
-`sudo cp lit_web_server/litwebserver.service /etc/systemd/system`
+`$ sudo cp lit_web_server/litwebserver.service /etc/systemd/system`
 4. Start and enable the script
-`sudo systemctl start litwebserver && sudo systemctl enable litwebserver
-`
+`$ sudo systemctl start litwebserver && sudo systemctl enable litwebserver`
+
 ## API Requests
 Method|Endpoint|Request|Response
 ------|--------|-------|--------
