@@ -67,6 +67,8 @@ Method|Endpoint|Request|Response
 ## FAQ
 ### How do I access the webpage?
 Get the ip address of your raspberry pi (`ip addr`), then in a web browser navigate to that ip address followed by a colon, folowed by the port number specified in the config. If you use port 80, then the colon and port are not required.
+### The IP address of my Raspberry Pi keeps changing. How do I tell it to stop?
+Like [this](https://thepihut.com/blogs/raspberry-pi-tutorials/16683276-how-to-setup-a-static-ip-address-on-your-raspberry-pi) or [this](https://www.howtogeek.com/184310/ask-htg-should-i-be-setting-static-ip-addresses-on-my-router/)
 ### How do I connect from outside the network
 To control your lights from anywhere, you will need to setup port forwarding on your router. The steps are specific to the router firmware, but you will need to forward the port specified in the config to the ip address of your raspberry pi.
 ### How do I authenticate with the api?
