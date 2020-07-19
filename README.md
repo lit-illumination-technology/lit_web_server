@@ -5,7 +5,8 @@ Provides a RESTful interface and webpage to access the features of the LIT daemo
 ## Requires
 [LIT Daemon](https://github.com/nickpesce/lit)
 
-## Configuration
+## Setup
+### Configuration
 The default configuration file location is `/home/pi/.lit/webserver/config.ini`. This can be changed using the `-c` command line flag. The configuration file must have a "General" section with "username", "password", and "port" values.
 
 Example:
@@ -15,6 +16,15 @@ username: my_username
 password: my_password
 port: 80
 ```
+### Installation
+1. Go to your home directory
+`$ cd`
+2. Clone this repository
+`$ git clone https://github.com/nickpesce/lit_web_server.git`
+3. Install the start script
+`$ sudo cp lit_web_server/litwebserver.service /etc/systemd/system`
+4. Start and enable the script
+`$ sudo systemctl start litwebserver && sudo systemctl enable litwebserver`
 
 ## API Requests
 Method|Endpoint|Request|Response
@@ -57,6 +67,8 @@ Method|Endpoint|Request|Response
 ## FAQ
 ### How do I access the webpage?
 Get the ip address of your raspberry pi (`ip addr`), then in a web browser navigate to that ip address followed by a colon, folowed by the port number specified in the config. If you use port 80, then the colon and port are not required.
+### The IP address of my Raspberry Pi keeps changing. How do I tell it to stop?
+Like [this](https://thepihut.com/blogs/raspberry-pi-tutorials/16683276-how-to-setup-a-static-ip-address-on-your-raspberry-pi) or [this](https://www.howtogeek.com/184310/ask-htg-should-i-be-setting-static-ip-addresses-on-my-router/)
 ### How do I connect from outside the network
 To control your lights from anywhere, you will need to setup port forwarding on your router. The steps are specific to the router firmware, but you will need to forward the port specified in the config to the ip address of your raspberry pi.
 ### How do I authenticate with the api?
