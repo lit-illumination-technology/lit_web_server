@@ -55,7 +55,7 @@ def hello():
 def command():
     json = request.get_json();
     if "effect" in json:
-        res = lit.start_effect(effect=json["effect"], args=json.get("args", {}))
+        res = lit.start_effect(effect=json["effect"], args=json.get("args", {}), overlayed=json.get("overlayed", False))
     else:
         res = lit.start_preset(json["preset"])
     return jsonify(res)

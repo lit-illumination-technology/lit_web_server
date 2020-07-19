@@ -61,6 +61,13 @@
             <div class="row">
                 <div class="col-sm-5"></div>
                 <div class="col-sm-2 centered_hor">
+		    <input type="checkbox" data-toggle="toggle" data-off="overlayed" data-on="overlayed" data-width="100" data-height="32" id="overlayed_toggle" unchecked>
+                </div>
+                <div class="col-sm-5"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-5"></div>
+                <div class="col-sm-2 centered_hor">
                     <button type="button" class="btn btn-success start_hidden" id="send">go</button>
                 </div>
                 <div class="col-sm-5"></div>
@@ -246,7 +253,8 @@
                     if(ranges.length == 0){
                         var command = {
                             effect: "off",
-                            args: {"ranges": "all"}
+                            args: {"ranges": "all"},
+                            exclusive: true
                         }
                     }
                     else {
@@ -257,7 +265,8 @@
                         }
                         var command = {
                             effect : effectSelector.children("option").filter(":selected").text(),
-                            args : args
+                            args : args,
+                            overlayed: $('#overlayed_toggle').prop('checked')
                         };
                     }
                     $.post({
