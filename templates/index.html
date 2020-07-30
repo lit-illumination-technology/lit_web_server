@@ -6,9 +6,7 @@
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
         <title>LIT</title>
-
-        <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
-        <link href="{{ url_for('static', filename='css/bootstrap-colorpicker.min.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet"> <link href="{{ url_for('static', filename='css/bootstrap-colorpicker.min.css') }}" rel="stylesheet">
         <link href="{{ url_for('static', filename='css/bootstrap-slider.min.css') }}" rel="stylesheet">
         <link href="{{ url_for('static', filename='css/bootstrap2-toggle.min.css') }}" rel="stylesheet">
         <link href="{{ url_for('static', filename='css/layout.css') }}" rel="stylesheet">
@@ -59,12 +57,32 @@
                 <div class="col-sm-4"></div>
             </div>
             <div class="row">
-                <div class="col-sm-5"></div>
-                <div class="col-sm-2 centered_hor">
-		    <input type="checkbox" data-off="overlayed" data-on="overlayed" data-width="100" data-height="32" id="overlayed_toggle" checked="false">
-                    <div id="opacity_container" class="start_hidden"><input id="opacity_slider" type='text' data-slider-value=1 data-slider-min=0 data-slider-max=10 data-slider-step=0.1></div>
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4 centered_hor">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Speed</div>
+                        <div class="panel-body">
+                            <input id="speed_slider" type='text' data-slider-value=50 data-slider-min=0 data-slider-max=100 data-slider-step=0.1>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-5"></div>
+                <div class="col-sm-4"></div>
+            </div>
+            <div class="row">
+                <div class="col-sm-4"></div>
+                <div class="col-sm-4 centered_hor">
+                    <div class="panel panel-default">
+                        <div class="panel-heading">Overlay</div>
+                        <div class="panel-body">
+                            <input type="checkbox" data-off="overlayed" data-on="overlayed" data-width="100" data-height="32" id="overlayed_toggle" checked="false">
+                            <div id="opacity_container" class="start_hidden">
+                                <div class="panel-heading">Opacity</div>
+                                <input id="opacity_slider" type='text' data-slider-value=1 data-slider-min=0 data-slider-max=10 data-slider-step=0.1>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-sm-4"></div>
             </div>
             <div class="row">
                 <div class="col-sm-5"></div>
@@ -85,6 +103,8 @@
         <script>
             $(document).ready(function(){
                 var effectSelector = $("#effect_selector");
+                var speedSlider = $("#speed_slider");
+                speedSlider.slider();
                 var overlayedToggle = $("#overlayed_toggle");
                 overlayedToggle.bootstrapToggle("off");
                 var opacityContainer = $("#opacity_container");
@@ -156,7 +176,7 @@
                 //Populate the effect dropdown
                 $.getJSON("/get_effects.json", function(result) {
                     $.each(result.effects, function() {
-                        effectSelector.append($("<option />").val(JSON.stringify(this.schema)).text(this.name));
+                        effectSelector.append($("<option />").val(JSON.stringify({'schema': this.schema, 'defaultSpeed': this.default_speed})).text(this.name));
                     });
                     effectSelector.closest(".col-sm-4").fadeIn();
                     sendButton.fadeIn();
@@ -209,7 +229,7 @@
                 //Populate the color selector
                 $.getJSON("/get_colors.json", function(result) {
                     $.each(result.colors, function() {
-                        colors[this.name] = rgbToHex(this.color);
+                        colors[this.name] = rgbToHex(this.rgb);
                     });
                 });
 
@@ -217,8 +237,9 @@
                 effectSelector.change(function() {
                     $('#controls').empty();
                     argControls = {};
-                    var controls = effectSelector.val();
-                    controls = $.parseJSON(controls);
+                    var effectInfo = $.parseJSON(effectSelector.val());
+                    speedSlider.slider('setValue', effectInfo.defaultSpeed)
+                    controls = effectInfo.schema;
                     for (i in controls) {
                         type = controls[i].value.type;
                         name = i;
@@ -272,17 +293,21 @@
                     }
                     else {
                         var args = {};
-                        args["ranges"] = ranges;
                         for (control in argControls) {
                             args[control] = argControls[control]();
                         }
                         var overlayed = overlayedToggle.prop('checked');
-                        var opacity = overlayed? parseInt(opacitySlider.slider('getValue')) : null;
+                        var opacity = overlayed? parseFloat(opacitySlider.slider('getValue')) : null;
+                        var speed = parseFloat(speedSlider.slider('getValue'))
                         var command = {
                             effect : effectSelector.children("option").filter(":selected").text(),
                             args : args,
-                            overlayed: overlayed,
-                            opacity: opacity
+                            properties: {
+                                ranges: ranges,
+                                speed: speed,
+                                overlayed: overlayed,
+                                opacity: opacity
+                            }
                         };
                     }
                     $.post({
