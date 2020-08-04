@@ -61,6 +61,9 @@ def command():
     elif "preset" in json:
         preset = json["preset"]
         res = lit.start_preset(preset["name"], properties=preset.get("properties", {}))
+    else:
+        return Response('Invalid command type', 500)
+
     return jsonify(res)
 
 @app.route("/api/v1/query/effects", methods=['GET'])

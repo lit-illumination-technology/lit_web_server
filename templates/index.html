@@ -144,35 +144,6 @@
                     });
                 });
 
-                $.get("/has_ai", function(result) {
-                    if(result=="true"){
-                        $("<input type='text' placeholder='What do you want me to do for you?' class='ai-input start_hidden' id='ai'/>").appendTo("#header");
-                        aiInput = $("#ai");
-                        $("#header").css("padding-bottom", "0px");
-                        aiInput.fadeIn();
-                        aiInput.focus();
-                        aiInput.keypress(function(e){
-                            if(e.which == 13){
-                                $.post({
-                                    url: '/ai_request',
-                                    data: aiInput.val(),
-                                    dataType: 'text'
-                                }).done(function(data) {
-                                    var msg = new SpeechSynthesisUtterance($.parseJSON(data).speech);
-                                    window.speechSynthesis.speak(msg);
-                                    $.notify({
-                                        message: $.parseJSON(data).speech
-                                    },{
-                                        type: 'success'
-                                    });
-                                });
-                                aiInput.val("");
-                            }
-                        });
-                    }
-                
-                });
-
                 //Populate the effect dropdown
                 $.getJSON("/api/v1/query/effects", function(result) {
                     $.each(result.effects, function() {
@@ -191,10 +162,10 @@
                     $.each(result.presets, function() {
                         let button =$("<button />").prop("type", "button").prop("id", "preset_"+this).addClass("btn btn-primary preset-btn").text(this);
                         $("#presets").append(button);
-                        let command = {type: "command", preset: this};
+                        let command = {preset: {name: this}};
                         button.click(function() {
                             $.post({
-                                url: '/command',
+                                url: '/api/v1/command',
                                 data: JSON.stringify(command),
                                 contentType: "application/json",
                                 dataType: 'json'
@@ -286,9 +257,11 @@
                 sendButton.click(function(){
                     if(ranges.length == 0){
                         var command = {
-                            effect: "off",
-                            args: {"ranges": "all"},
-                            exclusive: true
+                            effect: {
+                               name:  "off",
+                               args: {"ranges": "all"},
+                               properties: {overlayed: false}
+                            }
                         }
                     }
                     else {
@@ -300,13 +273,15 @@
                         var opacity = overlayed? parseFloat(opacitySlider.slider('getValue')) : null;
                         var speed = parseFloat(speedSlider.slider('getValue'))
                         var command = {
-                            effect : effectSelector.children("option").filter(":selected").text(),
-                            args : args,
-                            properties: {
-                                ranges: ranges,
-                                speed: speed,
-                                overlayed: overlayed,
-                                opacity: opacity
+                            effect : {
+                                name:  effectSelector.children("option").filter(":selected").text(),
+                                args : args,
+                                properties: {
+                                    ranges: ranges,
+                                    speed: speed,
+                                    overlayed: overlayed,
+                                    opacity: opacity
+                                }
                             }
                         };
                     }
