@@ -124,7 +124,7 @@
                         opacityContainer.fadeOut();
                     }
                 });
-                $.get("/get_ranges.json", function(result) {
+                $.get("/api/v1/query/ranges", function(result) {
                     $.each(result.sections, function() {
                         var name = this;
 			$range_input = $("<input type='checkbox' data-toggle='toggle' data-off='" + name + "' data-on='" + name + "' data-width='72' data-height='32' checked>");
@@ -174,7 +174,7 @@
                 });
 
                 //Populate the effect dropdown
-                $.getJSON("/get_effects.json", function(result) {
+                $.getJSON("/api/v1/query/effects", function(result) {
                     $.each(result.effects, function() {
                         effectSelector.append($("<option />").val(JSON.stringify({'schema': this.schema, 'defaultSpeed': this.default_speed})).text(this.name));
                     });
@@ -187,7 +187,7 @@
                 });
 
                 //Add preset buttons
-                $.getJSON("/get_presets.json", function(result) {
+                $.getJSON("/api/v1/query/presets", function(result) {
                     $.each(result.presets, function() {
                         let button =$("<button />").prop("type", "button").prop("id", "preset_"+this).addClass("btn btn-primary preset-btn").text(this);
                         $("#presets").append(button);
@@ -227,7 +227,7 @@
                 }
 
                 //Populate the color selector
-                $.getJSON("/get_colors.json", function(result) {
+                $.getJSON("/api/v1/query/colors", function(result) {
                     $.each(result.colors, function() {
                         colors[this.name] = rgbToHex(this.rgb);
                     });
@@ -311,7 +311,7 @@
                         };
                     }
                     $.post({
-                        url: '/command',
+                        url: '/api/v1/command',
                         data: JSON.stringify(command),
                         contentType: "application/json",
                         dataType: 'json'
