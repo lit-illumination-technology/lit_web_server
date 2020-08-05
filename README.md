@@ -70,7 +70,7 @@ Method|Endpoint|Request|Response
 ```
 `parameters`:
 ```javascript
-{"overlayed": boolean?, "opacity": number?, "ranges": [string]?}
+{"overlayed": boolean?, "opacity": number?, "ranges": [string]?, speed: number?}
 ```
 ## FAQ
 ### How do I access the webpage?

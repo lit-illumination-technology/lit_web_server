@@ -49,21 +49,20 @@ def requires_auth(f):
 def hello():
     return render_template('index.html')
 
-@app.route("/api/v1/command", methods=['POST'])
+@app.route("/api/v1/command/effect", methods=['POST'])
 @requires_auth
-def command():
-    json = request.get_json();
-    if "effect" in json:
-        effect = json["effect"]
-        res = lit.start_effect(effect_name=effect["name"],
-                               effect_args=effect.get("args", {}),
-                               properties=effect.get("properties", {}))
-    elif "preset" in json:
-        preset = json["preset"]
-        res = lit.start_preset(preset["name"], properties=preset.get("properties", {}))
-    else:
-        return Response('Invalid command type', 500)
+def command_effect():
+    effect= request.get_json();
+    res = lit.start_effect(effect_name=effect["name"],
+                           effect_args=effect.get("args", {}),
+                           properties=effect.get("properties", {}))
+    return jsonify(res)
 
+@app.route("/api/v1/command/preset", methods=['POST'])
+@requires_auth
+def command_preset():
+    preset = request.get_json();
+    res = lit.start_preset(preset["name"], properties=preset.get("properties", {}))
     return jsonify(res)
 
 @app.route("/api/v1/query/effects", methods=['GET'])

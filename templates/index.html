@@ -162,10 +162,10 @@
                     $.each(result.presets, function() {
                         let button =$("<button />").prop("type", "button").prop("id", "preset_"+this).addClass("btn btn-primary preset-btn").text(this);
                         $("#presets").append(button);
-                        let command = {preset: {name: this}};
+                        let command = {name: this};
                         button.click(function() {
                             $.post({
-                                url: '/api/v1/command',
+                                url: '/api/v1/command/preset',
                                 data: JSON.stringify(command),
                                 contentType: "application/json",
                                 dataType: 'json'
@@ -273,20 +273,18 @@
                         var opacity = overlayed? parseFloat(opacitySlider.slider('getValue')) : null;
                         var speed = parseFloat(speedSlider.slider('getValue'))
                         var command = {
-                            effect : {
-                                name:  effectSelector.children("option").filter(":selected").text(),
-                                args : args,
-                                properties: {
-                                    ranges: ranges,
-                                    speed: speed,
-                                    overlayed: overlayed,
-                                    opacity: opacity
-                                }
+                            name:  effectSelector.children("option").filter(":selected").text(),
+                            args : args,
+                            properties: {
+                                ranges: ranges,
+                                speed: speed,
+                                overlayed: overlayed,
+                                opacity: opacity
                             }
                         };
                     }
                     $.post({
-                        url: '/api/v1/command',
+                        url: '/api/v1/command/effect',
                         data: JSON.stringify(command),
                         contentType: "application/json",
                         dataType: 'json'
