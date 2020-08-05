@@ -27,12 +27,14 @@ port: 80
 `$ sudo systemctl start litwebserver && sudo systemctl enable litwebserver`
 
 ## API Requests
+All endpoints are prefixed with `/api/v1/`
 Method|Endpoint|Request|Response
 ------|--------|-------|--------
-`POST`|`/command`|`{"effect": string, "args": args}`|`{"rc": int, "result": string}`
-`GET`|`/get_effects.json`||`{"effects": [{"name": string, "schema": schema},]}`
-`GET`|`/get_colors.json`||`{"colors": [{"name": string, "color": [number, number, number]},]}`
-`GET`|`/get_ranges.json`||`{"sections": [string,], "zones": ["string"]}`
+`POST`|`command/effect`|`{"name": string, "args": args, "parameters": parameters}`|`{"rc": int, "result": string}`
+`POST`|`command/preset`|`{"name": string, "parameters": parameters}`|`{"rc": int, "result": string}`
+`GET`|`query/effects`||`{"effects": [{"name": string, "default_speed": number, "schema": schema},]}`
+`GET`|`query/colors`||`{"colors": [{"name": string, "rgb": [number, number, number]},]}`
+`GET`|`query/ranges`||`{"sections": [string,], "zones": ["string"]}`
 
 
 `schema`:
@@ -40,7 +42,9 @@ Method|Endpoint|Request|Response
 {
   arg_name: {
     "required": boolean,
-    "value": color|number
+    "value": {
+      "type": color|number
+    }
   }
 }
 ```
@@ -64,6 +68,10 @@ Method|Endpoint|Request|Response
 ```javascript
 {arg_name_1: arg_value_1, arg_name_2: arg_value_2, ...}
 ```
+`parameters`:
+```javascript
+{"overlayed": boolean?, "opacity": number?, "ranges": [string]?}
+```
 ## FAQ
 ### How do I access the webpage?
 Get the ip address of your raspberry pi (`ip addr`), then in a web browser navigate to that ip address followed by a colon, folowed by the port number specified in the config. If you use port 80, then the colon and port are not required.
@@ -80,9 +88,9 @@ No. Not at all. If you don't want random internet people intercepting your passw
 - [Tasker](https://play.google.com/store/apps/details?id=net.dinglisch.android.taskerm&hl=en_US) is an android app that allows you to automate tasks. Events can trigger a POST request that turn on/off the lights. Leaving your home wifi can turn the lights off. Your phone's morning alarm can turn the lights on. To set this up the Tasker action is __Net -> Http POST__ and the settings are:
     - __Server:Port__: *username*:*password*@*url*
         - *ex*: nick:hunter2@12.345.6.789
-    - __Path__: command
-    - __Data/File__: {"effect": "*effect*", "args": {...}}
-        - *ex*: {"effect": "on". "args": {"color": [255, 0, ,255]}}
+    - __Path__: command/effect
+    - __Data/File__: {"name": "*effect*", "args": {...}}
+        - *ex*: {"name": "on". "args": {"color": [255, 0, 255]}}
     - __Content Type__: application/json
     - __Trust Any Certificate__: ✓
 - Turn off the lights when you turn off or put your computer to sleep. This one is more operating system dependent, but for many linux systems this would involve a systemd service with `WantedBy=sleep.target` and a `curl` request.
