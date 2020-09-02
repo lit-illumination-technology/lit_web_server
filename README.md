@@ -8,8 +8,8 @@ Provides a RESTful interface and webpage to access the features of the LIT daemo
 ## Setup
 ### Configuration
 Configuration is done through environment variables.
-`LIT_PORT` specifies which port the server should run on.
 If `LIT_USER` and `LIT_PASSWORD` are defined, basic authentication will be required.
+This should be run with gunicorn
 
 ### Installation
 1. Go to your home directory
