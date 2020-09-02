@@ -18,6 +18,11 @@
         </div>
         <div class="container">
             <div class="row">
+                <div class="col-sm-12 centered_hor">
+                    <button type="button" class="btn btn-success" id="back">back</button>
+                </div>
+            </div>
+            <div class="row">
                 <div class="col-sm-12 centered_hor" id="presets">
                 </div>
             </div>
@@ -110,6 +115,7 @@
                 var opacityContainer = $("#opacity_container");
                 var opacitySlider = $("#opacity_slider");
                 opacitySlider.slider();
+                var backButton = $("#back");
                 var sendButton = $("#send");
                 var offButton = $("#off");
                 var onButton = $("#on");
@@ -124,7 +130,7 @@
                         opacityContainer.fadeOut();
                     }
                 });
-                $.get("/api/v1/query/ranges", function(result) {
+                $.get("/api/v1/ranges", function(result) {
                     $.each(result.sections, function() {
                         var name = this;
 			$range_input = $("<input type='checkbox' data-toggle='toggle' data-off='" + name + "' data-on='" + name + "' data-width='72' data-height='32' checked>");
@@ -145,11 +151,12 @@
                 });
 
                 //Populate the effect dropdown
-                $.getJSON("/api/v1/query/effects", function(result) {
+                $.getJSON("/api/v1/effects", function(result) {
                     $.each(result.effects, function() {
                         effectSelector.append($("<option />").val(JSON.stringify({'schema': this.schema, 'defaultSpeed': this.default_speed})).text(this.name));
                     });
                     effectSelector.closest(".col-sm-4").fadeIn();
+                    backButton.fadeIn();
                     sendButton.fadeIn();
                     offButton.fadeIn();
                     onButton.fadeIn();
@@ -158,15 +165,15 @@
                 });
 
                 //Add preset buttons
-                $.getJSON("/api/v1/query/presets", function(result) {
+                $.getJSON("/api/v1/presets", function(result) {
                     $.each(result.presets, function() {
                         let button =$("<button />").prop("type", "button").prop("id", "preset_"+this).addClass("btn btn-primary preset-btn").text(this);
                         $("#presets").append(button);
-                        let command = {name: this};
+                        let preset = this;
                         button.click(function() {
                             $.post({
-                                url: '/api/v1/command/preset',
-                                data: JSON.stringify(command),
+                                url: `/api/v1/presets/${preset}`,
+                                data: "{}",
                                 contentType: "application/json",
                                 dataType: 'json'
                             }).done(function(data) {
@@ -198,7 +205,7 @@
                 }
 
                 //Populate the color selector
-                $.getJSON("/api/v1/query/colors", function(result) {
+                $.getJSON("/api/v1/colors", function(result) {
                     $.each(result.colors, function() {
                         colors[this.name] = rgbToHex(this.rgb);
                     });
@@ -256,9 +263,9 @@
                 //Send the command
                 sendButton.click(function(){
                     if(ranges.length == 0){
+                        var effect = "off";
                         var command = {
                             effect: {
-                               name:  "off",
                                args: {"ranges": "all"},
                                properties: {overlayed: false}
                             }
@@ -272,8 +279,8 @@
                         var overlayed = overlayedToggle.prop('checked');
                         var opacity = overlayed? parseFloat(opacitySlider.slider('getValue')) : null;
                         var speed = parseFloat(speedSlider.slider('getValue'))
+                        var effect =  effectSelector.children("option").filter(":selected").text();
                         var command = {
-                            name:  effectSelector.children("option").filter(":selected").text(),
                             args : args,
                             properties: {
                                 ranges: ranges,
@@ -284,7 +291,7 @@
                         };
                     }
                     $.post({
-                        url: '/api/v1/command/effect',
+                        url: `/api/v1/effects/${effect}`,
                         data: JSON.stringify(command),
                         contentType: "application/json",
                         dataType: 'json'
@@ -302,6 +309,42 @@
                         else {
                             $("#result").html(data.result)
                         }
+                    });
+                });
+                backButton.click(function() {
+                    $.getJSON("/api/v1/state", function(result) {
+                        let max_tran = -1;
+                        $.each(result.state, function() {
+                            max_tran = Math.max(this.transaction_id, max_tran);
+                        });
+                        if(max_tran === -1){
+                            return;
+                        }
+                        let request  = {
+                            "transaction_id": max_tran
+                        };
+                        $.ajax({
+                            url: '/api/v1/effects',
+                            type: 'delete',
+                            data: JSON.stringify(request),
+                            contentType: "application/json",
+                            dataType: 'json',
+                            success: function(data) {
+                                if ( $(window).width() > 768) {
+                                    $("#result").html("")
+                                    $.notify({
+                                        // options
+                                        message: data.result
+                                    },{
+                                        // settings
+                                        type: 'success'
+                                    });
+                                } 
+                                else {
+                                    $("#result").html(data.result)
+                                }
+                            }
+                        });
                     });
                 });
             });

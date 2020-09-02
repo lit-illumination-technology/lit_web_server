@@ -1,8 +1,7 @@
-import argparse
-import configparser
 from functools import wraps
 import operator
 import os.path
+import os
 import threading
 
 from flask import Flask, render_template, request, abort, Response, jsonify
@@ -11,18 +10,8 @@ import lit
 
 app = Flask(__name__)
 
-parser = argparse.ArgumentParser(description='Start the L.I.T. daemon')
-parser.add_argument('--config', '-c', dest='base_path', type=str, 
-                    help='specify the configuration directory')
-args = parser.parse_args()
-config_dir = args.base_path if args.base_path and os.path.isdir(args.base_path) else "/home/pi/.lit/webserver"
-print("Using config directory {}".format(config_dir))
-
-config = configparser.ConfigParser()
-config.read(os.path.join(config_dir, 'config.ini'))
-password = config.get("General", "password")
-username = config.get("General", "username")
-port = config.getint("General", "port")
+username= os.environ.get('LIT_USER')
+password= os.environ.get('LIT_PASSWORD')
 
 def check_auth(un, pw):
     """This function is called to check if a username /
@@ -42,57 +31,73 @@ def requires_auth(f):
         if not auth or not check_auth(auth.username, auth.password):
             return authenticate()
         return f(*args, **kwargs)
-    return decorated
+    if username and password:
+        return decorated
+    else:
+        return f
 
 @app.route("/", methods=['GET'])
 @requires_auth
 def hello():
     return render_template('index.html')
 
-@app.route("/api/v1/command/effect", methods=['POST'])
+@app.route("/api/v1/effects/<effect_name>", methods=['POST'])
 @requires_auth
-def command_effect():
+def command_effect(effect_name):
     effect= request.get_json();
-    res = lit.start_effect(effect_name=effect["name"],
+    res = lit.start_effect(effect_name=effect_name,
                            effect_args=effect.get("args", {}),
                            properties=effect.get("properties", {}))
     return jsonify(res)
 
-@app.route("/api/v1/command/preset", methods=['POST'])
+@app.route("/api/v1/effects", methods=['DELETE'])
 @requires_auth
-def command_preset():
-    preset = request.get_json();
-    res = lit.start_preset(preset["name"], properties=preset.get("properties", {}))
+def command_stop():
+    selector = request.get_json();
+    if "effect_id" in selector:
+        res = lit.stop(effect_id=selector["effect_id"])
+    elif "transaction_id" in selector:
+        res = lit.stop(transaction_id=selector["transaction_id"])
+    else:
+        return Response("Invalid use of api", 500)
+        
     return jsonify(res)
 
-@app.route("/api/v1/query/effects", methods=['GET'])
+@app.route("/api/v1/presets/<preset_name>", methods=['POST'])
+@requires_auth
+def command_preset(preset_name):
+    preset = request.get_json();
+    res = lit.start_preset(preset_name, properties=preset.get("properties", {}))
+    return jsonify(res)
+
+@app.route("/api/v1/effects", methods=['GET'])
 def effects():
     return jsonify(effects=sorted(lit.get_effects(), key=operator.itemgetter('name')))
 
-@app.route("/api/v1/query/presets", methods=['GET'])
+@app.route("/api/v1/presets", methods=['GET'])
 def presets():
     return jsonify(presets=sorted(lit.get_presets()))
 
-@app.route("/api/v1/query/colors", methods=['GET'])
+@app.route("/api/v1/colors", methods=['GET'])
 def colors():
     return jsonify(colors=lit.get_colors())
 
-@app.route("/api/v1/query/ranges", methods=['GET'])
+@app.route("/api/v1/ranges", methods=['GET'])
 def ranges():
     return jsonify(sections=[k for k in lit.get_sections()], zones=[k for k in lit.get_zones()])
 
-@app.route("/api/v1/query/speeds", methods=['GET'])
+@app.route("/api/v1/speeds", methods=['GET'])
 def speeds():
     return jsonify(speeds=lit.get_speeds())
 
-@app.route("/api/v1/query/pixels", methods=['GET'])
+@app.route("/api/v1/pixels", methods=['GET'])
 def pixels():
     return jsonify(pixels=lit.get_pixels())
 
-@app.route("/api/v1/query/state", methods=['GET'])
+@app.route("/api/v1/state", methods=['GET'])
 def state():
     return jsonify(state=lit.get_state())
 
 if __name__ == "__main__":
     app.config['DEBUG'] = True
-    app.run(host='0.0.0.0', port=port, threaded=True)
+    app.run(host='0.0.0.0', threaded=True)

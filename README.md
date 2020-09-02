@@ -7,15 +7,10 @@ Provides a RESTful interface and webpage to access the features of the LIT daemo
 
 ## Setup
 ### Configuration
-The default configuration file location is `/home/pi/.lit/webserver/config.ini`. This can be changed using the `-c` command line flag. The configuration file must have a "General" section with "username", "password", and "port" values.
+Configuration is done through environment variables.
+`LIT_PORT` specifies which port the server should run on.
+If `LIT_USER` and `LIT_PASSWORD` are defined, basic authentication will be required.
 
-Example:
-```
-[General]
-username: my_username
-password: my_password
-port: 80
-```
 ### Installation
 1. Go to your home directory
 `$ cd`
@@ -30,11 +25,12 @@ port: 80
 All endpoints are prefixed with `/api/v1/`
 Method|Endpoint|Request|Response
 ------|--------|-------|--------
-`POST`|`command/effect`|`{"name": string, "args": args, "parameters": parameters}`|`{"rc": int, "result": string}`
-`POST`|`command/preset`|`{"name": string, "parameters": parameters}`|`{"rc": int, "result": string}`
-`GET`|`query/effects`||`{"effects": [{"name": string, "default_speed": number, "schema": schema},]}`
-`GET`|`query/colors`||`{"colors": [{"name": string, "rgb": [number, number, number]},]}`
-`GET`|`query/ranges`||`{"sections": [string,], "zones": ["string"]}`
+`GET`|`effects`||`{"effects": [{"name": string, "default_speed": number, "schema": schema},]}`
+`POST`|`effects/{effect_name}`|`{"args": args, "parameters": parameters}`|`{"rc": int, "result": string}`
+`DELETE`|`effects`|`{"effect_id": int} | {"transaction_id": int}`|`{"rc": int, "result": string}`
+`POST`|`presets/{preset_name}`|`{"parameters": parameters}`|`{"rc": int, "result": string}`
+`GET`|`colors`||`{"colors": [{"name": string, "rgb": [number, number, number]},]}`
+`GET`|`ranges`||`{"sections": [string,], "zones": ["string"]}`
 
 
 `schema`:

@@ -1,0 +1,2 @@
+recursive-include litweb/templates *
+recursive-include litweb/static *

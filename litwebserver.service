@@ -3,8 +3,9 @@ Description=lit web server
 After=network.target
 
 [Service]
-ExecStart=/usr/bin/python3 web_server.py -c /home/pi/.lit/webserver
-WorkingDirectory=/home/pi/lit_web_server
+Environment=LIT_USER=nick
+Environment=LIT_PASSWORD=pesce
+ExecStart=/usr/local/bin/gunicorn -b 0.0.0.0:3536 litweb:app
 StandardOutput=inherit
 StandardError=inherit
 Restart=always
