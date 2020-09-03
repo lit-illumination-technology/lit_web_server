@@ -8,8 +8,8 @@ Provides a RESTful interface and webpage to access the features of the LIT daemo
 ## Setup
 ### Configuration
 Configuration is done through environment variables.
-`LIT_PORT` specifies which port the server should run on.
 If `LIT_USER` and `LIT_PASSWORD` are defined, basic authentication will be required.
+This should be run with gunicorn
 
 ### Installation
 1. Go to your home directory
@@ -27,7 +27,7 @@ Method|Endpoint|Request|Response
 ------|--------|-------|--------
 `GET`|`effects`||`{"effects": [{"name": string, "default_speed": number, "schema": schema},]}`
 `POST`|`effects/{effect_name}`|`{"args": args, "parameters": parameters}`|`{"code": int, "message": string, "transaction_id": int}`
-`DELETE`|`effects`|`{"effect_id": int} | {"transaction_id": int}`|`{"code": int, "message": string}`
+`DELETE`|`effects`|`{"effect_id": int} \| {"transaction_id": int}`|`{"code": int, "message": string}`
 `POST`|`presets/{preset_name}`|`{"parameters": parameters}`|`{"code": int, "message": string, "transaction_id": int}`
 `POST`|`history`|`{"back": bool?, "forward": bool?}`|`{"code": int, "message": string}`
 `GET`|`colors`||`{"colors": [{"name": string, "rgb": [number, number, number]},]}`
