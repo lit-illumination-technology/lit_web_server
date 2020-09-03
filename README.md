@@ -26,9 +26,10 @@ All endpoints are prefixed with `/api/v1/`
 Method|Endpoint|Request|Response
 ------|--------|-------|--------
 `GET`|`effects`||`{"effects": [{"name": string, "default_speed": number, "schema": schema},]}`
-`POST`|`effects/{effect_name}`|`{"args": args, "parameters": parameters}`|`{"rc": int, "result": string}`
-`DELETE`|`effects`|`{"effect_id": int} | {"transaction_id": int}`|`{"rc": int, "result": string}`
-`POST`|`presets/{preset_name}`|`{"parameters": parameters}`|`{"rc": int, "result": string}`
+`POST`|`effects/{effect_name}`|`{"args": args, "parameters": parameters}`|`{"code": int, "message": string, "transaction_id": int}`
+`DELETE`|`effects`|`{"effect_id": int} | {"transaction_id": int}`|`{"code": int, "message": string}`
+`POST`|`presets/{preset_name}`|`{"parameters": parameters}`|`{"code": int, "message": string, "transaction_id": int}`
+`POST`|`history`|`{"back": bool?, "forward": bool?}`|`{"code": int, "message": string}`
 `GET`|`colors`||`{"colors": [{"name": string, "rgb": [number, number, number]},]}`
 `GET`|`ranges`||`{"sections": [string,], "zones": ["string"]}`
 
