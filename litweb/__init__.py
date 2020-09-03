@@ -44,7 +44,7 @@ def hello():
 @app.route("/api/v1/effects/<effect_name>", methods=['POST'])
 @requires_auth
 def command_effect(effect_name):
-    effect= request.get_json();
+    effect = request.get_json()
     res = lit.start_effect(effect_name=effect_name,
                            effect_args=effect.get("args", {}),
                            properties=effect.get("properties", {}))
@@ -68,6 +68,19 @@ def command_stop():
 def command_preset(preset_name):
     preset = request.get_json();
     res = lit.start_preset(preset_name, properties=preset.get("properties", {}))
+    return jsonify(res)
+
+@app.route("/api/v1/history", methods=['POST'])
+@requires_auth
+def history():
+    direction = request.get_json()
+    if "back" in direction:
+        res = lit.back()
+    elif "forward" in direction:
+        res = lit.forward()
+    else:
+        return Response('Invalid use of api', 500)
+    
     return jsonify(res)
 
 @app.route("/api/v1/effects", methods=['GET'])

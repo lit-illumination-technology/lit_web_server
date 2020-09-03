@@ -19,7 +19,8 @@
         <div class="container">
             <div class="row">
                 <div class="col-sm-12 centered_hor">
-                    <button type="button" class="btn btn-success" id="back">back</button>
+                    <button type="button" class="btn btn-danger" id="back">back</button>
+                    <button type="button" class="btn btn-success" id="forward">forward</button>
                 </div>
             </div>
             <div class="row">
@@ -116,6 +117,7 @@
                 var opacitySlider = $("#opacity_slider");
                 opacitySlider.slider();
                 var backButton = $("#back");
+                var forwardButton = $("#forward");
                 var sendButton = $("#send");
                 var offButton = $("#off");
                 var onButton = $("#on");
@@ -157,6 +159,7 @@
                     });
                     effectSelector.closest(".col-sm-4").fadeIn();
                     backButton.fadeIn();
+                    forwardButton.fadeIn();
                     sendButton.fadeIn();
                     offButton.fadeIn();
                     onButton.fadeIn();
@@ -181,14 +184,14 @@
                                     $("#result").html("")
                                     $.notify({
                                         // options
-                                        message: data.result
+                                        message: data.message
                                     },{
                                         // settings
                                         type: 'success'
                                     });
                                 } 
                                 else {
-                                    $("#result").html(data.result)
+                                    $("#result").html(data.message)
                                 }
                             });
                         });
@@ -300,51 +303,70 @@
                             $("#result").html("")
                             $.notify({
                                 // options
-                                message: data.result
+                                message: data.message
                             },{
                                 // settings
                                 type: 'success'
                             });
                         } 
                         else {
-                            $("#result").html(data.result)
+                            $("#result").html(data.message)
                         }
                     });
                 });
                 backButton.click(function() {
-                    $.getJSON("/api/v1/state", function(result) {
-                        let max_tran = -1;
-                        $.each(result.state, function() {
-                            max_tran = Math.max(this.transaction_id, max_tran);
-                        });
-                        if(max_tran === -1){
-                            return;
-                        }
-                        let request  = {
-                            "transaction_id": max_tran
-                        };
-                        $.ajax({
-                            url: '/api/v1/effects',
-                            type: 'delete',
-                            data: JSON.stringify(request),
-                            contentType: "application/json",
-                            dataType: 'json',
-                            success: function(data) {
-                                if ( $(window).width() > 768) {
-                                    $("#result").html("")
-                                    $.notify({
-                                        // options
-                                        message: data.result
-                                    },{
-                                        // settings
-                                        type: 'success'
-                                    });
-                                } 
-                                else {
-                                    $("#result").html(data.result)
-                                }
+                    let request  = {
+                        "back": true
+                    };
+                    $.ajax({
+                        url: '/api/v1/history',
+                        type: 'post',
+                        data: JSON.stringify(request),
+                        contentType: "application/json",
+                        dataType: 'json',
+                        success: function(data) {
+                            if ( $(window).width() > 768) {
+                                $("#result").html("")
+                                $.notify({
+                                    // options
+                                    message: data.message
+                                },{
+                                    // settings
+                                    type: 'success'
+                                });
+                            } 
+                            else {
+                                $("#result").html(data.message)
                             }
-                        });
+                        }
+                    });
+                });
+
+                forwardButton.click(function() {
+                    let request  = {
+                        "forward": true
+                    };
+                    $.ajax({
+                        url: '/api/v1/history',
+                        type: 'post',
+                        data: JSON.stringify(request),
+                        contentType: "application/json",
+                        dataType: 'json',
+                        success: function(data) {
+                            if ( $(window).width() > 768) {
+                                $("#result").html("")
+                                $.notify({
+                                    // options
+                                    message: data.message
+                                },{
+                                    // settings
+                                    type: 'success'
+                                });
+                            } 
+                            else {
+                                $("#result").html(data.message)
+                            }
+                        }
                     });
                 });
             });
