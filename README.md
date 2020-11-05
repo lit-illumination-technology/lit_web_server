@@ -12,13 +12,18 @@ If `LIT_USER` and `LIT_PASSWORD` are defined, basic authentication will be requi
 This should be run with gunicorn
 
 ### Installation
-1. Go to your home directory
-`$ cd`
-2. Clone this repository
-`$ git clone https://github.com/nickpesce/lit_web_server.git`
-3. Install the start script
-`$ sudo cp lit_web_server/litwebserver.service /etc/systemd/system`
-4. Start and enable the script
+1. Install pip3 if you haven't already
+`$ sudo apt-get install pip3`
+2. Install lit-web
+`$ sudo pip3 install --system lit-web`
+3. If you did not already have lit-core installed, set it up
+https://github.com/lit-illumination-technology/lit_core#installation
+4. Install the start script
+`$ cd /etc/system/systemd && sudo wget https://raw.githubusercontent.com/lit-illumination-technology/lit_web_server/master/litwebserver.service`
+5. Change your username and password
+Edit the LIT_USERNAME and LIT_PASSWORD variables
+`$ sudo nano /etc/systemd/system/litwebserver.service`
+6. Start and enable the script
 `$ sudo systemctl start litwebserver && sudo systemctl enable litwebserver`
 
 ## API Requests
