@@ -95,13 +95,13 @@ def presets():
 def colors():
     return jsonify(colors=lit.get_colors())
 
+@app.route("/api/v1/color_types", methods=['GET'])
+def color_types():
+    return jsonify(color_types=lit.get_color_types())
+
 @app.route("/api/v1/ranges", methods=['GET'])
 def ranges():
     return jsonify(sections=[k for k in lit.get_sections()], zones=[k for k in lit.get_zones()])
-
-@app.route("/api/v1/speeds", methods=['GET'])
-def speeds():
-    return jsonify(speeds=lit.get_speeds())
 
 @app.route("/api/v1/pixels", methods=['GET'])
 def pixels():

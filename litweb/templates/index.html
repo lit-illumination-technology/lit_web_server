@@ -16,7 +16,7 @@
             <h1>LIT</h1>
             <h4>Lit Illumination Technology</h4>
         </div>
-        <div class="container">
+        <div class="container start_hidden" id="main_container">
             <div class="row">
                 <div class="col-sm-12 centered_hor">
                     <button type="button" class="btn btn-danger" id="back">back</button>
@@ -29,7 +29,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-4"></div>
-                <div class="col-sm-4 centered_hor start_hidden">
+                <div class="col-sm-4 centered_hor">
                     <div class="panel panel-default">
                         <div class="panel-heading">Lights</div>
                         <div class="panel-body" id="range_switches">
@@ -40,7 +40,7 @@
             </div>
             <div class="row">
                 <div class="col-sm-4"></div>
-                <div class="col-sm-4 centered_hor start_hidden">
+                <div class="col-sm-4 centered_hor">
                     <div class="panel panel-default">
                         <div class="panel-heading">Effect</div>
                         <div class="panel-body">
@@ -51,17 +51,6 @@
                 <div class="col-sm-4"></div>
             </div>
             <div id="controls"></div>
-            <div class="row">
-                <div class="col-sm-4"></div>
-                <div class="col-sm-4 centered_hor start_hidden">
-                    <div class="panel panel-default">
-                        <div class="panel-heading">Color</div>
-                        <div class="panel-body">
-                        </div>
-                    </div>
-                </div>
-                <div class="col-sm-4"></div>
-            </div>
             <div class="row">
                 <div class="col-sm-4"></div>
                 <div class="col-sm-4 centered_hor">
@@ -93,7 +82,7 @@
             <div class="row">
                 <div class="col-sm-5"></div>
                 <div class="col-sm-2 centered_hor">
-                    <button type="button" class="btn btn-success start_hidden" id="send">go</button>
+                    <button type="button" class="btn btn-success" id="send">go</button>
                 </div>
                 <div class="col-sm-5"></div>
             </div>
@@ -106,271 +95,7 @@
         <script src="{{ url_for('static', filename='js/bootstrap-slider.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap2-toggle.min.js') }}"></script>
         <script src="{{ url_for('static', filename='js/bootstrap-notify.min.js') }}"></script>
-        <script>
-            $(document).ready(function(){
-                var effectSelector = $("#effect_selector");
-                var speedSlider = $("#speed_slider");
-                speedSlider.slider();
-                var overlayedToggle = $("#overlayed_toggle");
-                overlayedToggle.bootstrapToggle("off");
-                var opacityContainer = $("#opacity_container");
-                var opacitySlider = $("#opacity_slider");
-                opacitySlider.slider();
-                var backButton = $("#back");
-                var forwardButton = $("#forward");
-                var sendButton = $("#send");
-                var offButton = $("#off");
-                var onButton = $("#on");
-                var ranges = [];
-                var colors = {};
-                var argControls = {};
-
-                overlayedToggle.change(function(){
-                    if(overlayedToggle.prop("checked")) {
-                        opacityContainer.fadeIn();
-                    }else {
-                        opacityContainer.fadeOut();
-                    }
-                });
-                $.get("/api/v1/ranges", function(result) {
-                    $.each(result.sections, function() {
-                        var name = this;
-			$range_input = $("<input type='checkbox' data-toggle='toggle' data-off='" + name + "' data-on='" + name + "' data-width='72' data-height='32' checked>");
-			ranges.push(name);
-                        $range_input.change(function(){
-                            if($(this).prop("checked")) {
-                                ranges.push(name);
-                            }else {
-                                ranges.splice(ranges.indexOf(name), 1);
-                            }
-                        });
-                        $switch_container = $("<div class='toggle_container'></div>");
-                        $range_input.appendTo($switch_container);
-                        $switch_container.appendTo("#range_switches");
-                        $range_input.bootstrapToggle();
-                        $("#range_switches").closest(".col-sm-4").fadeIn();
-                    });
-                });
-
-                //Populate the effect dropdown
-                $.getJSON("/api/v1/effects", function(result) {
-                    $.each(result.effects, function() {
-                        effectSelector.append($("<option />").val(JSON.stringify({'schema': this.schema, 'defaultSpeed': this.default_speed})).text(this.name));
-                    });
-                    effectSelector.closest(".col-sm-4").fadeIn();
-                    backButton.fadeIn();
-                    forwardButton.fadeIn();
-                    sendButton.fadeIn();
-                    offButton.fadeIn();
-                    onButton.fadeIn();
-                    //Update options for initially selected effect
-                    effectSelector.trigger("change");
-                });
-
-                //Add preset buttons
-                $.getJSON("/api/v1/presets", function(result) {
-                    $.each(result.presets, function() {
-                        let button =$("<button />").prop("type", "button").prop("id", "preset_"+this).addClass("btn btn-primary preset-btn").text(this);
-                        $("#presets").append(button);
-                        let preset = this;
-                        button.click(function() {
-                            $.post({
-                                url: `/api/v1/presets/${preset}`,
-                                data: "{}",
-                                contentType: "application/json",
-                                dataType: 'json'
-                            }).done(function(data) {
-                                if ( $(window).width() > 768) {
-                                    $("#result").html("")
-                                    $.notify({
-                                        // options
-                                        message: data.message
-                                    },{
-                                        // settings
-                                        type: 'success'
-                                    });
-                                } 
-                                else {
-                                    $("#result").html(data.message)
-                                }
-                            });
-                        });
-                    });
-                });
-
-                function componentToHex(c) {
-                    var hex = c.toString(16);
-                    return hex.length == 1 ? "0" + hex : hex;
-                }
-
-                function rgbToHex(rgb) {
-                    return "#" + componentToHex(rgb[0]) + componentToHex(rgb[1]) + componentToHex(rgb[2]);
-                }
-
-                //Populate the color selector
-                $.getJSON("/api/v1/colors", function(result) {
-                    $.each(result.colors, function() {
-                        colors[this.name] = rgbToHex(this.rgb);
-                    });
-                });
-
-                //When a different effect is chosen, hide/show appropriate options
-                effectSelector.change(function() {
-                    $('#controls').empty();
-                    argControls = {};
-                    var effectInfo = $.parseJSON(effectSelector.val());
-                    speedSlider.slider('setValue', effectInfo.defaultSpeed)
-                    controls = effectInfo.schema;
-                    for (i in controls) {
-                        type = controls[i].value.type;
-                        name = i;
-                        mainDiv = $('<div/>', { 'class': 'row' });
-                        mainDiv.append($('<div/>', {'class': 'col-sm-4'}));
-                        controlDiv = $('<div/>', {'class': 'panel panel-default'});
-                        controlDiv.append($('<div/>', {'class': 'panel-heading', text: name}));
-                        mainDiv.append($('<div/>', {'class': 'col-sm-4 centered_hor'}).append(controlDiv));
-                        mainDiv.append($('<div/>', {'class': 'col-sm-4'}));
-                        if (type == 'number') {
-                            slider = $('<input/>', {id: 'input_'+i, type: 'text', 'data-slider-value': controls[i].value.default, 'data-slider-min': controls[i].value.min, 'data-slider-max': controls[i].value.max, 'data-slider-step': 0.1});
-                            controlDiv.append($('<div/>', {'class': 'panel-body'}).append(slider));
-                            $('#controls').append(mainDiv);
-                            slider.slider();
-                            argControls[name] = function(s) {
-                                return function() {
-                                    return parseInt(s.slider("getValue"))
-                                }
-                            }(slider);
-                        }
-                        else if (type == 'color') {
-                            colorSelector = $('<input/>', {id: 'input_'+i, 'class': 'form-control colorpicker-element', type: 'text', 'data-format': 'hex', 'value': rgbToHex(controls[i].value.default)});
-                            controlDiv.append($('<div/>', {'class': 'panel-body'}).append(colorSelector));
-                            $('#controls').append(mainDiv);
-                            colorSelector.colorpicker({colorSelectors : colors,
-                                            template: '<div class="colorpicker dropdown-menu">' +
-                                              '<div class="colorpicker-saturation"><i><b></b></i></div>' +
-                                              '<div class="colorpicker-hue"><i></i></div>' +
-                                              '<div class="colorpicker-alpha"><i></i></div>' +
-                                              '<div class="colorpicker-color"><div /></div>' +
-                                              '</div>',});
-                            argControls[name] = function (selector){
-                                return function() {
-                                    var rgba = selector.data('colorpicker').color.toRGB();
-                                    return [rgba['r'], rgba['g'], rgba['b']];
-                                }
-                            }(colorSelector);
-                        }
-                    }
-                });
-                
-
-                //Send the command
-                sendButton.click(function(){
-                    if(ranges.length == 0){
-                        var effect = "off";
-                        var command = {
-                            effect: {
-                               args: {"ranges": "all"},
-                               properties: {overlayed: false}
-                            }
-                        }
-                    }
-                    else {
-                        var args = {};
-                        for (control in argControls) {
-                            args[control] = argControls[control]();
-                        }
-                        var overlayed = overlayedToggle.prop('checked');
-                        var opacity = overlayed? parseFloat(opacitySlider.slider('getValue')) : null;
-                        var speed = parseFloat(speedSlider.slider('getValue'))
-                        var effect =  effectSelector.children("option").filter(":selected").text();
-                        var command = {
-                            args : args,
-                            properties: {
-                                ranges: ranges,
-                                speed: speed,
-                                overlayed: overlayed,
-                                opacity: opacity
-                            }
-                        };
-                    }
-                    $.post({
-                        url: `/api/v1/effects/${effect}`,
-                        data: JSON.stringify(command),
-                        contentType: "application/json",
-                        dataType: 'json'
-                    }).done(function(data) {
-                        if ( $(window).width() > 768) {
-                            $("#result").html("")
-                            $.notify({
-                                // options
-                                message: data.message
-                            },{
-                                // settings
-                                type: 'success'
-                            });
-                        } 
-                        else {
-                            $("#result").html(data.message)
-                        }
-                    });
-                });
-                backButton.click(function() {
-                    let request  = {
-                        "back": true
-                    };
-                    $.ajax({
-                        url: '/api/v1/history',
-                        type: 'post',
-                        data: JSON.stringify(request),
-                        contentType: "application/json",
-                        dataType: 'json',
-                        success: function(data) {
-                            if ( $(window).width() > 768) {
-                                $("#result").html("")
-                                $.notify({
-                                    // options
-                                    message: data.message
-                                },{
-                                    // settings
-                                    type: 'success'
-                                });
-                            } 
-                            else {
-                                $("#result").html(data.message)
-                            }
-                        }
-                    });
-                });
-
-                forwardButton.click(function() {
-                    let request  = {
-                        "forward": true
-                    };
-                    $.ajax({
-                        url: '/api/v1/history',
-                        type: 'post',
-                        data: JSON.stringify(request),
-                        contentType: "application/json",
-                        dataType: 'json',
-                        success: function(data) {
-                            if ( $(window).width() > 768) {
-                                $("#result").html("")
-                                $.notify({
-                                    // options
-                                    message: data.message
-                                },{
-                                    // settings
-                                    type: 'success'
-                                });
-                            } 
-                            else {
-                                $("#result").html(data.message)
-                            }
-                        }
-                    });
-                });
-            });
-        </script>
+	<script src="{{ url_for('static', filename='js/script.js') }}"></script>
     </body>
 </html>
 
