@@ -23,15 +23,15 @@ function rgbToHex(rgb) {
 
 
 function schemaToComponent(name, schemaElement, argFuncs, colors, colorTypes) {
-	type = schemaElement.value.type;
-	mainDiv = $('<div/>', { 'class': 'row' });
+	const type = schemaElement.value.type;
+	const mainDiv = $('<div/>', { 'class': 'row' });
 	mainDiv.append($('<div/>', {'class': 'col-sm-4'}));
-	controlDiv = $('<div/>', {'class': 'panel panel-default'});
+	const controlDiv = $('<div/>', {'class': 'panel panel-default'});
 	controlDiv.append($('<div/>', {'class': 'panel-heading', text: name}));
 	mainDiv.append($('<div/>', {'class': 'col-sm-4 centered_hor'}).append(controlDiv));
 	mainDiv.append($('<div/>', {'class': 'col-sm-4'}));
 	if (type == 'number') {
-		slider = $('<input/>', {id: 'input_'+name, type: 'text', 'data-slider-value': schemaElement.value.default, 'data-slider-min': schemaElement.value.min, 'data-slider-max': schemaElement.value.max, 'data-slider-step': 0.1});
+		const slider = $('<input/>', {id: 'input_'+name, type: 'text', 'data-slider-value': schemaElement.value.default, 'data-slider-min': schemaElement.value.min, 'data-slider-max': schemaElement.value.max, 'data-slider-step': 0.1});
 		controlDiv.append($('<div/>', {'class': 'panel-body'}).append(slider));
 		slider.slider();
 		argFuncs[name] = function(s) {
@@ -39,42 +39,47 @@ function schemaToComponent(name, schemaElement, argFuncs, colors, colorTypes) {
 				return parseInt(s.slider("getValue"))
 			}
 		}(slider);
-		return mainDiv;
+		return controlDiv;
 	}
 	else if (type == 'color') {
-		colorTypeSelector = $('<select id="color_type_selector"></select>')
+		const colorTypeSelector = $('<select id="color_type_selector"></select>')
 		$.each(colorTypes, function() {
 			colorTypeSelector.append($("<option />").val(JSON.stringify({"name": this.name, "schema": this.schema})).text(this.name));
 		});
-		colorArgsDiv = $('<div/>');
+		const colorArgsDiv = $('<div/>', {'class': 'panel-body'});
 		controlDiv.append($('<div/>', {'class': 'panel-body'}).append(colorTypeSelector).append(colorArgsDiv));
 
-		let colorArgFuncs = {};
+		const colorArgFuncs = {};
 
 		colorTypeSelector.change(function() {
 			colorArgsDiv.empty();
-			colorArgFuncs = {};
+			const colorArgFuncs = {};
 			console.log(colorTypeSelector.val());
-			let schema = $.parseJSON(colorTypeSelector.val()).schema;
-			for (i in schema) {
-				component = schemaToComponent(i, schema[i], colorArgFuncs, colors, colorTypes);
-				colorArgsDiv.append(component);
-			}
+			const schema = $.parseJSON(colorTypeSelector.val()).schema;
+            if ($.isEmptyObject(schema)) {
+                colorArgsDiv.hide()
+            } else {
+                colorArgsDiv.show()
+                for (i in schema) {
+                    component = schemaToComponent(i, schema[i], colorArgFuncs, colors, colorTypes);
+                    colorArgsDiv.append(component);
+                }
+            }
 		});
 		argFuncs[name] = function (selector){
 			return function() {
-				let args = {};
+				const args = {};
 				for (control in colorArgFuncs) {
 					args[control] = colorArgFuncs[control]();
 				}
 				return {type: $.parseJSON(colorTypeSelector.val()).name, args: args};
 			}
 		}(colorTypeSelector);
-		colorTypeSelector.trigger('change');
-		return mainDiv;
+        colorTypeSelector.trigger('change');
+		return controlDiv;
 	} else if (type == 'rgb') {
-		let start_color = schemaElement.value.default || [255, 255, 255];
-		colorSelector = $('<input/>', {id: 'input_'+name, 'class': 'form-control colorpicker-element', type: 'text', 'data-format': 'hex', 'value': rgbToHex(start_color)});
+		const start_color = schemaElement.value.default || [255, 255, 255];
+		const colorSelector = $('<input/>', {id: 'input_'+name, 'class': 'form-control colorpicker-element', type: 'text', 'data-format': 'hex', 'value': rgbToHex(start_color)});
 		colorSelector.colorpicker({
 				colorSelectors : colors,
 				template: '<div class="colorpicker dropdown-menu">' +
@@ -86,14 +91,14 @@ function schemaToComponent(name, schemaElement, argFuncs, colors, colorTypes) {
 		});
 		argFuncs[name] = function (selector){
 			return function() {
-				let rgba = selector.data('colorpicker').color.toRGB();
+				const rgba = selector.data('colorpicker').color.toRGB();
 				return [rgba['r'], rgba['g'], rgba['b']];
 			}
 		}(colorSelector);
 		controlDiv.append(colorSelector);
-		return mainDiv;
+		return controlDiv;
 	} else if (type == 'choices') {
-		choiceSelector= $('<select/>', {id: 'input_'+name});
+		const choiceSelector = $('<select/>', {id: 'input_'+name});
 		$.each(schemaElement.value.choices, function() {
 			choiceSelector.append($("<option />").text(this));
 		});
@@ -103,7 +108,7 @@ function schemaToComponent(name, schemaElement, argFuncs, colors, colorTypes) {
 				return selector.find(":selected").text();
 			}
 		}(choiceSelector);
-		return mainDiv;
+		return controlDiv;
     }
 }
 
@@ -145,7 +150,7 @@ function getRanges() {
 function setupDynamicComponents(ranges, effects, presets, colorTypes, colors) {
     console.log("Loaded necessary data. Setting up components");
     console.log(effects);
-	let hex_colors = {};
+	const hex_colors = {};
 
     //Populate the color selector
     $.each(colors, function() {
@@ -168,10 +173,14 @@ function setupEffects(effects, colors, colorTypes) {
         g_argControls = {};
         let effectInfo = $.parseJSON(g_effectSelector.val());
         g_speedSlider.slider('setValue', effectInfo.defaultSpeed)
-        controls = effectInfo.schema;
+        const controls = effectInfo.schema;
         for (i in controls) {
             component = schemaToComponent(i, controls[i], g_argControls, colors, colorTypes);
-            $('#controls').append(component);
+            controlDiv = $('<div/>', { 'class': 'row' });
+            controlDiv.append($('<div/>', {'class': 'col-sm-4'}));
+            controlDiv.append($('<div/>', {'class': 'col-sm-4 centered_hor'}).append(component));
+            controlDiv.append($('<div/>', {'class': 'col-sm-4'}));
+            $('#controls').append(controlDiv);
         }
     });
     
@@ -211,7 +220,7 @@ function setupPresets(presets) {
 
 function setupRanges(ranges) {
     $.each(ranges.sections, function() {
-        let name = this;
+        const name = this;
         range_input = $("<input type='checkbox' data-toggle='toggle' data-off='" + name + "' data-on='" + name + "' data-width='72' data-height='32' checked>");
         g_selectedRanges.push(name);
         range_input.change(function(){
@@ -221,7 +230,7 @@ function setupRanges(ranges) {
                 g_selectedRanges.splice(g_selectedRanges.indexOf(name), 1);
             }
         });
-        switch_container = $("<div class='toggle_container'></div>");
+        const switch_container = $("<div class='toggle_container'></div>");
         range_input.appendTo(switch_container);
         switch_container.appendTo("#range_switches");
         range_input.bootstrapToggle();
