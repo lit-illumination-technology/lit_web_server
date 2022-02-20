@@ -49,11 +49,11 @@ function schemaToComponent(name, schemaElement, argFuncs, colors, colorTypes) {
 		const colorArgsDiv = $('<div/>', {'class': 'panel-body'});
 		controlDiv.append($('<div/>', {'class': 'panel-body'}).append(colorTypeSelector).append(colorArgsDiv));
 
-		const colorArgFuncs = {};
+		let colorArgFuncs = {};
 
 		colorTypeSelector.change(function() {
 			colorArgsDiv.empty();
-			const colorArgFuncs = {};
+			colorArgFuncs = {};
 			console.log(colorTypeSelector.val());
 			const schema = $.parseJSON(colorTypeSelector.val()).schema;
             if ($.isEmptyObject(schema)) {
