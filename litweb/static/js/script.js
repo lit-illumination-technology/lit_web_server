@@ -67,7 +67,7 @@ function schemaToComponent(name, schemaElement, argFuncs, colors, colorTypes) {
 				for (control in colorArgFuncs) {
 					args[control] = colorArgFuncs[control]();
 				}
-				return {type: $.parseJSON(colorTypeSelector.val()).name, args:  args};
+				return {type: $.parseJSON(colorTypeSelector.val()).name, args: args};
 			}
 		}(colorTypeSelector);
 		colorTypeSelector.trigger('change');
@@ -92,7 +92,19 @@ function schemaToComponent(name, schemaElement, argFuncs, colors, colorTypes) {
 		}(colorSelector);
 		controlDiv.append(colorSelector);
 		return mainDiv;
-	}
+	} else if (type == 'choices') {
+		choiceSelector= $('<select/>', {id: 'input_'+name});
+		$.each(schemaElement.value.choices, function() {
+			choiceSelector.append($("<option />").text(this));
+		});
+		controlDiv.append($('<div/>', {'class': 'panel-body'}).append(choiceSelector));
+		argFuncs[name] = function(selector) {
+			return function() {
+				return selector.find(":selected").text();
+			}
+		}(choiceSelector);
+		return mainDiv;
+    }
 }
 
 function getEffects() {
@@ -214,6 +226,7 @@ function setupRanges(ranges) {
         switch_container.appendTo("#range_switches");
         range_input.bootstrapToggle();
     });
+    $("#ranges_row").fadeIn();
 }
 
 $(document).ready(function(){
@@ -233,7 +246,7 @@ $(document).ready(function(){
 
     $.when(getRanges(), getEffects(), getPresets(), getColorTypes(), getColors()).done(function (ranges, effects, presets, colorTypes, colors) {
         setupDynamicComponents(ranges[0], effects[0].effects, presets[0].presets, colorTypes[0].color_types, colors[0].colors);
-        $("#main_container").fadeIn();
+        $("#main_container").show();
     }).fail(console.log);
 
     g_overlayedToggle.change(function(){
